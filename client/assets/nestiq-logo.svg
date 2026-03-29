@@ -1,0 +1,17 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="132" fill="#0F172A"/>
+  <ellipse cx="202" cy="226" rx="28" ry="36" fill="#60A5FA"/>
+  <ellipse cx="256" cy="205" rx="31" ry="40" fill="#60A5FA"/>
+  <ellipse cx="312" cy="226" rx="28" ry="36" fill="#60A5FA"/>
+  <path d="M128 286C162 322 218 342 256 342C296 342 349 323 384 286" stroke="#F97316" stroke-width="24" stroke-linecap="round"/>
+  <path d="M144 250C180 286 226 303 256 303C288 303 333 286 368 250" stroke="#FB923C" stroke-width="22" stroke-linecap="round"/>
+  <path d="M170 223C196 248 230 262 256 262C283 262 318 248 344 223" stroke="#FDBA74" stroke-width="18" stroke-linecap="round"/>
+  <path d="M88 420H225" stroke="white" stroke-width="42" stroke-linecap="round"/>
+  <path d="M88 420V118" stroke="white" stroke-width="42" stroke-linecap="round" opacity="0"/>
+  <path d="M242 420H312" stroke="white" stroke-width="42" stroke-linecap="round"/>
+  <path d="M242 118V420" stroke="white" stroke-width="42" stroke-linecap="round" opacity="0"/>
+  <path d="M96 122V420" stroke="white" stroke-width="0"/>
+  <path d="M86 118H126L228 306V118H270V420H230L128 233V420H86V118Z" fill="white"/>
+  <path d="M292 118H334V420H292V118Z" fill="#F97316"/>
+  <path d="M352 118H426C426 170 426 221 426 269C426 321 426 370 426 420H384V304H352V420H310V118H352ZM352 266H384V156H352V266Z" fill="#F97316"/>
+</svg>
