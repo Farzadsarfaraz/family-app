@@ -1,4 +1,4 @@
-# Nestiq
+# GoFamly
 
 A full-stack family management app with:
 
@@ -17,7 +17,7 @@ A full-stack family management app with:
 ## Project Structure
 
 ```text
-Nestiq/
+GoFamly/
   client/
   server/
 ```

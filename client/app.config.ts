@@ -1,9 +1,9 @@
 import type { ExpoConfig } from "expo/config";
 
 const config: ExpoConfig = {
-  name: "Nestiq",
-  slug: "nestiq",
-  scheme: "nestiq",
+  name: "GoFamly",
+  slug: "gofamly",
+  scheme: "gofamly",
   version: "1.0.0",
   orientation: "portrait",
   userInterfaceStyle: "light",
@@ -11,10 +11,10 @@ const config: ExpoConfig = {
   jsEngine: "hermes",
   ios: {
     supportsTablet: true,
-    bundleIdentifier: "com.farzadsarfaraz.nestiq",
+    bundleIdentifier: "com.farzadsarfaraz.gofamly",
   },
   android: {
-    package: "com.farzadsarfaraz.nestiq",
+    package: "com.farzadsarfaraz.gofamly",
     versionCode: 1,
     adaptiveIcon: {
       backgroundColor: "#F4F7FB",

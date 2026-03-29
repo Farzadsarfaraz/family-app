@@ -3,10 +3,11 @@ import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native"
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useAuth } from "../context/AuthContext";
+import { useLocale } from "../context/LocaleContext";
 import { dashboardApi, familyApi } from "../services/api";
 import { DashboardData, FamilyMember } from "../types";
-import { readableDate, currency } from "../utils/format";
 import { SurfaceCard } from "../components/SurfaceCard";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { sectionColors } from "../constants/theme";
 
 const initialDashboard: DashboardData = {
@@ -18,6 +19,7 @@ const initialDashboard: DashboardData = {
 
 export const HomeScreen = () => {
   const { user, family, signOut } = useAuth();
+  const { t, formatDate, formatCurrency } = useLocale();
   const navigation = useNavigation<any>();
   const [dashboard, setDashboard] = useState(initialDashboard);
   const [members, setMembers] = useState<FamilyMember[]>([]);
@@ -46,36 +48,36 @@ export const HomeScreen = () => {
 
   const cards = [
     {
-      title: "Groceries",
-      value: `${dashboard.groceryLeft} items left`,
-      helper: "Shared shopping list",
+      title: t("home.card.groceries.title"),
+      value: t("home.card.groceries.value", { count: dashboard.groceryLeft }),
+      helper: t("home.card.groceries.helper"),
       color: sectionColors.grocery,
       softColor: "#DCFCE7",
       route: "Grocery",
       emoji: "🛒",
     },
     {
-      title: "Budget",
-      value: `${currency(dashboard.budget.totalExpenses)} of ${currency(dashboard.budget.totalIncome)}`,
-      helper: "Spent this month",
+      title: t("home.card.budget.title"),
+      value: t("home.card.budget.value", { spent: formatCurrency(dashboard.budget.totalExpenses), total: formatCurrency(dashboard.budget.totalIncome) }),
+      helper: t("home.card.budget.helper"),
       color: sectionColors.budget,
       softColor: "#FFEDD5",
       route: "Budget",
       emoji: "💰",
     },
     {
-      title: "Calendar",
-      value: dashboard.nextEvent ? `${dashboard.nextEvent.title} · ${readableDate(dashboard.nextEvent.date)}` : "Nothing scheduled yet",
-      helper: "Next upcoming event",
+      title: t("home.card.calendar.title"),
+      value: dashboard.nextEvent ? `${dashboard.nextEvent.title} · ${formatDate(dashboard.nextEvent.date)}` : t("home.card.calendar.empty"),
+      helper: t("home.card.calendar.helper"),
       color: sectionColors.calendar,
       softColor: "#E0F2FE",
       route: "Calendar",
       emoji: "📅",
     },
     {
-      title: "Chores",
-      value: `${dashboard.choresToday} due today`,
-      helper: "Pending tasks",
+      title: t("home.card.chores.title"),
+      value: t("home.card.chores.value", { count: dashboard.choresToday }),
+      helper: t("home.card.chores.helper"),
       color: sectionColors.chores,
       softColor: "#F3E8FF",
       route: "Chores",
@@ -89,27 +91,31 @@ export const HomeScreen = () => {
       contentContainerStyle={{ padding: 20, paddingBottom: 110 }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4F46E5" />}
     >
+      <View className="mb-3 self-start">
+        <LanguageSwitcher compact />
+      </View>
+
       <LinearGradient colors={["#0F172A", "#1E1B4B", "#312E81"]} className="mb-5 overflow-hidden rounded-[28px] px-4 py-3.5">
         <View className="absolute -right-10 -top-12 h-40 w-40 rounded-full bg-white/10" />
         <View className="absolute -left-8 bottom-6 h-24 w-24 rounded-full bg-cyan-400/10" />
 
         <View className="flex-row items-start justify-between">
           <View className="flex-1 pr-4">
-            <Text className="text-[10px] font-bold uppercase tracking-[1.6px] text-indigo-200">Today at home</Text>
+            <Text className="text-[10px] font-bold uppercase tracking-[1.6px] text-indigo-200">{t("home.badge")}</Text>
             <Text className="mt-1.5 text-[16px] font-black leading-5 text-white">
-              Hello, {user?.name?.split(" ")[0] ?? "family"}
+              {t("home.hello", { name: user?.name?.split(" ")[0] ?? "family" })}
             </Text>
             <Text className="mt-1 text-xs leading-4 text-slate-300">
-              {readableDate(new Date())} · {family?.name ?? "Your family space"}
+              {formatDate(new Date())} · {family?.name ?? "GoFamly"}
             </Text>
           </View>
           <Pressable onPress={signOut} className="rounded-full bg-white/10 px-3 py-1.5">
-            <Text className="text-[11px] font-bold text-white">Sign out</Text>
+            <Text className="text-[11px] font-bold text-white">{t("home.signOut")}</Text>
           </Pressable>
         </View>
 
         <View className="mt-3 rounded-[20px] bg-white/10 px-3 py-3">
-          <Text className="text-[11px] font-bold uppercase tracking-[1.8px] text-indigo-100">Family circle</Text>
+          <Text className="text-[11px] font-bold uppercase tracking-[1.8px] text-indigo-100">{t("home.familyCircle")}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mt-3">
             {members.map((member) => (
               <View key={member.id} className="mr-3 items-center">
@@ -121,15 +127,15 @@ export const HomeScreen = () => {
             ))}
           </ScrollView>
           <View className="mt-3 flex-row items-center justify-between rounded-[16px] bg-black/10 px-3 py-2.5">
-            <Text className="text-[11px] font-semibold text-slate-200">Invite code</Text>
+            <Text className="text-[11px] font-semibold text-slate-200">{t("home.inviteCode")}</Text>
             <Text className="text-[11px] font-black tracking-[1.8px] text-white">{family?.inviteCode ?? "..."}</Text>
           </View>
         </View>
       </LinearGradient>
 
       <View className="mb-3 flex-row items-center justify-between">
-        <Text className="text-xl font-black tracking-[-0.6px] text-ink">Quick view</Text>
-        <Text className="text-sm font-semibold text-slate-400">Tap any card</Text>
+        <Text className="text-xl font-black tracking-[-0.6px] text-ink">{t("home.quickView")}</Text>
+        <Text className="text-sm font-semibold text-slate-400">{t("home.tapCard")}</Text>
       </View>
 
       {cards.map((card) => (
@@ -142,7 +148,7 @@ export const HomeScreen = () => {
                   <View style={{ backgroundColor: card.softColor }} className="rounded-2xl px-3 py-2">
                     <Text className="text-2xl">{card.emoji}</Text>
                   </View>
-                  <Text className="text-xs font-bold uppercase tracking-[1.6px] text-slate-400">Open</Text>
+                  <Text className="text-xs font-bold uppercase tracking-[1.6px] text-slate-400">{t("home.open")}</Text>
                 </View>
                 <Text className="mt-4 text-xl font-black tracking-[-0.4px] text-ink">{card.title}</Text>
                 <Text className="mt-1 text-base font-semibold leading-6" style={{ color: card.color }}>

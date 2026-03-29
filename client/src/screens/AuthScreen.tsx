@@ -2,14 +2,17 @@ import React, { useState } from "react";
 import { Alert, Platform, Pressable, ScrollView, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useAuth } from "../context/AuthContext";
+import { useLocale } from "../context/LocaleContext";
 import { avatarPalette } from "../constants/theme";
 import { EasyFamilyLogo } from "../components/branding/EasyFamilyLogo";
 import { FormInput } from "../components/FormInput";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { SurfaceCard } from "../components/SurfaceCard";
 
 export const AuthScreen = () => {
   const { signIn, signUp } = useAuth();
+  const { t } = useLocale();
   const [mode, setMode] = useState<"login" | "register">("register");
   const [joinExisting, setJoinExisting] = useState(false);
   const [name, setName] = useState("");
@@ -37,38 +40,38 @@ export const AuthScreen = () => {
     const trimmedInviteCode = inviteCode.trim().toUpperCase();
 
     if (!trimmedEmail) {
-      showAlert("Email required", "Please enter your email address.");
+      showAlert(t("auth.emailRequired"), t("auth.emailRequiredBody"));
       return;
     }
 
     if (!password) {
-      showAlert("Password required", "Please enter your password.");
+      showAlert(t("auth.passwordRequired"), t("auth.passwordRequiredBody"));
       return;
     }
 
     if (!isEmailValid(trimmedEmail)) {
-      showAlert("Invalid email", "Please enter a valid email address.");
+      showAlert(t("auth.invalidEmail"), t("auth.invalidEmailBody"));
       return;
     }
 
     if (password.length < 6) {
-      showAlert("Password too short", "Your password should be at least 6 characters long.");
+      showAlert(t("auth.passwordShort"), t("auth.passwordShortBody"));
       return;
     }
 
     if (mode === "register") {
       if (!trimmedName) {
-        showAlert("Missing name", "Please enter your name before continuing.");
+        showAlert(t("auth.missingName"), t("auth.missingNameBody"));
         return;
       }
 
       if (joinExisting && trimmedInviteCode.length < 6) {
-        showAlert("Invite code needed", "Enter a valid family invite code to join an existing family.");
+        showAlert(t("auth.inviteNeeded"), t("auth.inviteNeededBody"));
         return;
       }
 
       if (!joinExisting && trimmedFamilyName.length < 2) {
-        showAlert("Family name needed", "Choose a family name with at least 2 characters.");
+        showAlert(t("auth.familyNameNeeded"), t("auth.familyNameNeededBody"));
         return;
       }
     }
@@ -91,13 +94,13 @@ export const AuthScreen = () => {
       const message = error?.response?.data?.error || "Please check your details and try again.";
 
       if (message === "Incorrect email or password.") {
-        showAlert("Login failed", "The email or password is not correct.");
+        showAlert(t("auth.loginFailed"), t("auth.loginFailedBody"));
       } else if (message === "An account with that email already exists.") {
-        showAlert("Account exists", "An account with this email already exists. Try logging in instead.");
+        showAlert(t("auth.accountExists"), t("auth.accountExistsBody"));
       } else if (message === "Invite code not found.") {
-        showAlert("Invite code not found", "That invite code doesn't match any family. Please check it and try again.");
+        showAlert(t("auth.inviteNotFound"), t("auth.inviteNotFoundBody"));
       } else {
-        showAlert("Could not continue", message);
+        showAlert(t("auth.couldNotContinue"), message);
       }
     } finally {
       setSaving(false);
@@ -106,36 +109,36 @@ export const AuthScreen = () => {
 
   return (
     <LinearGradient colors={["#E9EEFF", "#F8FAFC", "#F5FBF6"]} className="flex-1">
-      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 64, paddingBottom: 56 }}>
-        <View className="relative overflow-hidden rounded-[32px] bg-[#0F172A] px-6 py-7">
+      <ScrollView contentContainerStyle={{ padding: 20, paddingTop: 36, paddingBottom: 56 }}>
+        <View className="relative overflow-hidden rounded-[24px] bg-[#0F172A] px-4 py-3">
           <View className="absolute -right-8 -top-8 h-36 w-36 rounded-full bg-[#1E293B]" />
           <View className="absolute right-6 top-14 h-16 w-16 rounded-full bg-[#F97316]/20" />
           <View className="absolute -left-4 bottom-8 h-24 w-24 rounded-full bg-[#60A5FA]/15" />
 
-          <View className="rounded-full self-start border border-white/10 bg-white/10 px-3 py-2">
-            <Text className="text-xs font-bold uppercase tracking-[2px] text-[#BFDBFE]">Family command center</Text>
+        <View className="mb-2 self-start">
+          <LanguageSwitcher compact inverted />
+        </View>
+
+          <View className="rounded-full self-start border border-white/10 bg-white/10 px-2.5 py-1.5">
+            <Text className="text-[10px] font-bold uppercase tracking-[1.6px] text-[#BFDBFE]">{t("auth.badge")}</Text>
           </View>
 
-          <View className="mt-5">
-            <EasyFamilyLogo />
+          <View className="mt-2">
+            <EasyFamilyLogo compact />
           </View>
 
-          <Text className="mt-4 text-[30px] font-black leading-9 text-white">
-            Home life,{"\n"}but finally organized.
-          </Text>
-          <Text className="mt-3 max-w-[320px] text-base leading-6 text-slate-300">
-            Groceries, budgets, events, and chores all tucked into one calm, family-friendly space.
-          </Text>
+          <Text className="mt-2 text-[16px] font-black leading-5 text-white">{t("auth.headline")}</Text>
+          <Text className="mt-1.5 max-w-[320px] text-xs leading-4.5 text-slate-300">{t("auth.subheadline")}</Text>
 
-          <View className="mt-6 flex-row flex-wrap">
+          <View className="mt-3 flex-row flex-wrap">
             {[
-              { label: "Shared lists", tint: "#22C55E" },
-              { label: "Family calendar", tint: "#60A5FA" },
-              { label: "Chore rhythm", tint: "#F97316" },
+              { label: t("auth.pill.sharedLists"), tint: "#22C55E" },
+              { label: t("auth.pill.familyCalendar"), tint: "#60A5FA" },
+              { label: t("auth.pill.choreRhythm"), tint: "#F97316" },
             ].map((item) => (
-              <View key={item.label} className="mb-2 mr-2 flex-row items-center rounded-full bg-white/10 px-3 py-2">
-                <View style={{ backgroundColor: item.tint }} className="mr-2 h-2.5 w-2.5 rounded-full" />
-                <Text className="text-sm font-semibold text-white">{item.label}</Text>
+              <View key={item.label} className="mb-1.5 mr-1.5 flex-row items-center rounded-full bg-white/10 px-2 py-1">
+                <View style={{ backgroundColor: item.tint }} className="mr-1.5 h-2 w-2 rounded-full" />
+                <Text className="text-[10px] font-semibold text-white">{item.label}</Text>
               </View>
             ))}
           </View>
@@ -144,12 +147,12 @@ export const AuthScreen = () => {
         <SurfaceCard className="mt-6 rounded-[30px] border border-white/70 bg-white/95 p-5">
           <View className="mb-5">
             <Text className="text-2xl font-black tracking-[-0.6px] text-[#0F172A]">
-              {mode === "login" ? "Welcome back" : "Create your Nestiq space"}
+              {mode === "login" ? t("auth.welcomeBack") : t("auth.createSpace")}
             </Text>
             <Text className="mt-2 text-sm leading-6 text-slate-500">
               {mode === "login"
-                ? "Jump back into your family's routines, reminders, and daily flow."
-                : "Set up a calm home dashboard everyone can use without friction."}
+                ? t("auth.loginHelper")
+                : t("auth.registerHelper")}
             </Text>
           </View>
 
@@ -160,16 +163,19 @@ export const AuthScreen = () => {
                 onPress={() => setMode(value)}
                 className={`flex-1 rounded-2xl py-3.5 ${mode === value ? "bg-white" : ""}`}
               >
-                <Text className="text-center text-base font-bold text-ink">{value === "register" ? "Create account" : "Log in"}</Text>
+                <Text className="text-center text-base font-bold text-ink">{value === "register" ? t("auth.createAccount") : t("auth.logIn")}</Text>
               </Pressable>
             ))}
           </View>
 
+          {mode === "register" ? <FormInput label={t("auth.name")} value={name} onChangeText={setName} placeholder="Maya" /> : null}
+          <FormInput label={t("auth.email")} value={email} onChangeText={setEmail} placeholder="family@example.com" keyboardType="email-address" />
+          <FormInput label={t("auth.password")} value={password} onChangeText={setPassword} placeholder="••••••••" secureTextEntry />
+
           {mode === "register" && (
             <>
-              <FormInput label="Name" value={name} onChangeText={setName} placeholder="Maya" />
               <View className="mb-4">
-                <Text className="mb-2 text-sm font-semibold text-slate-600">Pick your avatar color</Text>
+                <Text className="mb-2 text-sm font-semibold text-slate-600">{t("auth.pickAvatar")}</Text>
                 <View className="flex-row flex-wrap rounded-[24px] bg-slate-50 p-3">
                   {avatarPalette.map((color) => (
                     <Pressable
@@ -187,34 +193,29 @@ export const AuthScreen = () => {
               </View>
               <View className="mb-5 flex-row rounded-[20px] bg-slate-100 p-1.5">
                 <Pressable onPress={() => setJoinExisting(false)} className={`flex-1 rounded-2xl py-3.5 ${!joinExisting ? "bg-white" : ""}`}>
-                  <Text className="text-center font-bold text-ink">Create family</Text>
+                  <Text className="text-center font-bold text-ink">{t("auth.createFamily")}</Text>
                 </Pressable>
                 <Pressable onPress={() => setJoinExisting(true)} className={`flex-1 rounded-2xl py-3.5 ${joinExisting ? "bg-white" : ""}`}>
-                  <Text className="text-center font-bold text-ink">Join family</Text>
+                  <Text className="text-center font-bold text-ink">{t("auth.joinFamily")}</Text>
                 </Pressable>
               </View>
             </>
           )}
 
-          <FormInput label="Email" value={email} onChangeText={setEmail} placeholder="family@example.com" keyboardType="email-address" />
-          <FormInput label="Password" value={password} onChangeText={setPassword} placeholder="••••••••" secureTextEntry />
-
           {mode === "register" &&
             (joinExisting ? (
-              <FormInput label="Invite code" value={inviteCode} onChangeText={setInviteCode} placeholder="AB12CD" />
+              <FormInput label={t("auth.inviteCode")} value={inviteCode} onChangeText={setInviteCode} placeholder="AB12CD" />
             ) : (
-              <FormInput label="Family name" value={familyName} onChangeText={setFamilyName} placeholder="The Lopez Family" />
+              <FormInput label={t("auth.familyName")} value={familyName} onChangeText={setFamilyName} placeholder="The Lopez Family" />
             ))}
 
           <View className="mt-2">
-            <PrimaryButton label={saving ? "Please wait..." : mode === "login" ? "Log in to Nestiq" : "Start with Nestiq"} onPress={submit} color="#4F46E5" disabled={saving} />
+            <PrimaryButton label={saving ? t("auth.pleaseWait") : mode === "login" ? t("auth.loginButton") : t("auth.startButton")} onPress={submit} color="#4F46E5" disabled={saving} />
           </View>
 
           <View className="mt-5 rounded-[22px] bg-slate-50 px-4 py-4">
-            <Text className="text-sm font-bold uppercase tracking-[1.5px] text-slate-400">Why families like it</Text>
-            <Text className="mt-2 text-sm leading-6 text-slate-600">
-              Big tap targets, simple flows, and one shared home for routines that both adults and kids can understand.
-            </Text>
+            <Text className="text-sm font-bold uppercase tracking-[1.5px] text-slate-400">{t("auth.whyFamiliesLikeIt")}</Text>
+            <Text className="mt-2 text-sm leading-6 text-slate-600">{t("auth.whyFamiliesLikeItBody")}</Text>
           </View>
         </SurfaceCard>
       </ScrollView>

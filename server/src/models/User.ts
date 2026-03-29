@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, Types, model } from "mongoose";
 
 export interface UserDocument {
   name: string;
@@ -7,7 +7,7 @@ export interface UserDocument {
   role: "admin" | "member";
   avatarColor: string;
   shareBudget: boolean;
-  familyId: Schema.Types.ObjectId | null;
+  familyId: Types.ObjectId | null;
   createdAt: Date;
   updatedAt: Date;
 }
