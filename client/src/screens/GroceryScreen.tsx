@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from "@react-navigation/native";
@@ -17,6 +17,7 @@ import { GroceryItem } from "../types";
 export const GroceryScreen = () => {
   const { showAlert } = useAppDialog();
   const { t } = useLocale();
+  const scrollRef = useRef<ScrollView | null>(null);
   const [items, setItems] = useState<GroceryItem[]>([]);
   const [name, setName] = useState("");
   const [quantity, setQuantity] = useState("1");
@@ -38,6 +39,9 @@ export const GroceryScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
+      requestAnimationFrame(() => {
+        scrollRef.current?.scrollTo({ y: 0, animated: false });
+      });
       load().catch(console.error);
     }, [])
   );
@@ -136,6 +140,7 @@ export const GroceryScreen = () => {
 
   return (
     <ScrollView
+      ref={scrollRef}
       className="flex-1 bg-surface"
       contentContainerStyle={{ padding: 18, paddingBottom: 110 }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={sectionColors.grocery} />}

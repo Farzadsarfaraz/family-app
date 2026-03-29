@@ -91,6 +91,11 @@ export const AuthScreen = () => {
         showAlert({ title: t("auth.loginFailed"), message: t("auth.loginFailedBody") });
       } else if (message === "An account with that email already exists.") {
         showAlert({ title: t("auth.accountExists"), message: t("auth.accountExistsBody") });
+      } else if (message === "This account already belongs to a family. Please log in instead. If you want to join another family, you have to delete your account first.") {
+        showAlert({
+          title: t("auth.accountExists"),
+          message: "This account already belongs to a family. Please log in instead. If you want to join another family, you have to delete your account first.",
+        });
       } else if (message === "Invite code not found.") {
         showAlert({ title: t("auth.inviteNotFound"), message: t("auth.inviteNotFoundBody") });
       } else {

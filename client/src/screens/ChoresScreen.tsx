@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, Text, View, useWindowDimensions } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from "@react-navigation/native";
@@ -17,6 +17,7 @@ import { isoDate } from "../utils/format";
 export const ChoresScreen = () => {
   const { showAlert } = useAppDialog();
   const { t, formatDate } = useLocale();
+  const scrollRef = useRef<ScrollView | null>(null);
   const { width } = useWindowDimensions();
   const isCompact = width < 430;
   const [members, setMembers] = useState<FamilyMember[]>([]);
@@ -38,6 +39,9 @@ export const ChoresScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
+      requestAnimationFrame(() => {
+        scrollRef.current?.scrollTo({ y: 0, animated: false });
+      });
       load().catch(console.error);
     }, [])
   );
@@ -73,6 +77,7 @@ export const ChoresScreen = () => {
 
   return (
     <ScrollView
+      ref={scrollRef}
       className="flex-1 bg-surface"
       contentContainerStyle={{ padding: isCompact ? 16 : 20, paddingBottom: 110 }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={sectionColors.chores} />}

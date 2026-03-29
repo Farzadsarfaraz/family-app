@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { useFocusEffect } from "@react-navigation/native";
 import { FormInput } from "../components/FormInput";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { SurfaceCard } from "../components/SurfaceCard";
@@ -16,7 +17,6 @@ export const AccountScreen = () => {
   const { user, family, updateMe, changePassword, deleteMe, signOut } = useAuth();
   const { showAlert, showConfirm } = useAppDialog();
   const [activeSection, setActiveSection] = useState<SectionKey>("profile");
-  const [menuOpen, setMenuOpen] = useState(false);
   const [profileName, setProfileName] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -51,8 +51,15 @@ export const AccountScreen = () => {
       .catch(console.error);
   }, [user?.role]);
 
+  useFocusEffect(
+    useCallback(() => {
+      requestAnimationFrame(() => {
+        scrollRef.current?.scrollTo({ y: 0, animated: false });
+      });
+    }, [])
+  );
+
   const openSection = (section: Exclude<SectionKey, null>) => {
-    setMenuOpen(false);
     setActiveSection(section);
 
     requestAnimationFrame(() => {
@@ -241,96 +248,121 @@ export const AccountScreen = () => {
 
   return (
     <ScrollView ref={scrollRef} className="flex-1 bg-surface" contentContainerStyle={{ padding: 16, paddingBottom: 110 }}>
-      <LinearGradient colors={["#F8FAFC", "#EEF2FF", "#F8FAFC"]} className="mb-4 overflow-hidden rounded-[26px] border border-white/80 px-4 py-4">
-        <View className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-indigo-100/80" />
-        <View className="absolute right-10 top-5 h-8 w-8 rounded-full bg-sky-100/80" />
-        <Text className="text-[10px] font-bold uppercase tracking-[1.7px] text-indigo-500">More</Text>
-        <Text className="mt-1 text-[18px] font-black tracking-[-0.3px] text-ink">Account & access</Text>
-        <Text className="mt-1.5 max-w-[290px] text-[13px] leading-5 text-slate-500">
-          Personal settings, sign out, and family admin tools in one calm place.
+      <LinearGradient colors={["#0F172A", "#1E293B", "#334155"]} className="mb-5 overflow-hidden rounded-[32px] px-5 py-8">
+        <View className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-white/10" />
+        <View className="absolute right-12 top-5 h-11 w-11 rounded-full bg-white/10" />
+        <Text className="text-[11px] font-bold uppercase tracking-[1.8px] text-slate-300">Account</Text>
+        <View className="mt-3.5 flex-row items-center">
+          <View
+            className="mr-3.5 h-13 w-13 items-center justify-center rounded-[20px] border border-white/15 shadow-sm"
+            style={{ backgroundColor: user?.avatarColor ?? sectionColors.home }}
+          />
+          <View className="flex-1">
+            <Text className="text-[20px] font-black tracking-[-0.3px] text-white">{user?.name ?? "GoFamly user"}</Text>
+            <Text className="mt-1 text-[14px] text-slate-300">{family?.name ?? "Family space"}</Text>
+          </View>
+        </View>
+        <View className="mt-4 self-start rounded-full bg-white/10 px-3 py-1.5">
+          <Text className="text-[11px] font-bold uppercase tracking-[1.2px] text-slate-200">Personal settings</Text>
+        </View>
+        <Text className="mt-3 max-w-[320px] text-[14px] leading-6 text-slate-300">
+          Change your profile, password, and family settings from one place.
         </Text>
       </LinearGradient>
 
       <SurfaceCard className="rounded-[24px] border border-white/70 bg-white/95 p-4">
         <View className="flex-row items-center justify-between">
-          <View>
-            <Text className="text-[18px] font-black tracking-[-0.4px] text-ink">Menu</Text>
+          <View className="flex-1 pr-3">
+            <Text className="text-[11px] font-bold uppercase tracking-[1.4px] text-slate-400">Quick actions</Text>
+            <Text className="mt-1 text-[18px] font-black tracking-[-0.4px] text-ink">Manage your space</Text>
             <Text className="mt-1 text-[13px] leading-5 text-slate-500">
-              Choose what you want to manage.
+              Open exactly what you need.
             </Text>
           </View>
-          <Pressable
-            onPress={() => setMenuOpen((value) => !value)}
-            className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2"
-          >
-            <Text className="text-[12px] font-black tracking-[1px] text-slate-500">☰</Text>
+          <Pressable onPress={signOut} className="rounded-[16px] bg-slate-900 px-3.5 py-2.5">
+            <Text className="text-[12px] font-bold uppercase tracking-[1px] text-white">Logout</Text>
           </Pressable>
         </View>
 
-        <View className="mt-4 flex-row items-center justify-between">
-          <View className="rounded-full bg-slate-100 px-3 py-1.5">
-            <Text className="text-xs font-bold uppercase tracking-[1.4px] text-slate-500">
-              {activeSection === "profile"
-                ? "User info"
-                : activeSection === "password"
-                  ? "Password"
-                  : activeSection === "admin"
-                    ? "Admin"
-                    : activeSection === "delete"
-                      ? "Delete"
-                      : "Ready"}
-            </Text>
-          </View>
-          <Text className="text-[13px] text-slate-400">Tap the burger to choose an action</Text>
+        <View className="mt-4 rounded-[18px] border border-slate-200 bg-slate-50 px-3.5 py-3">
+          <Text className="text-[11px] font-bold uppercase tracking-[1.3px] text-slate-400">Current section</Text>
+          <Text className="mt-1 text-[15px] font-black text-ink">
+            {activeSection === "profile"
+              ? "User info"
+              : activeSection === "password"
+                ? "Password"
+                : activeSection === "admin"
+                  ? "Admin tools"
+            : activeSection === "delete"
+                    ? "Delete account"
+                    : "Ready"}
+          </Text>
         </View>
 
-        {menuOpen ? (
-          <View className="mt-4 rounded-[22px] border border-slate-200 bg-slate-50/90 px-3 py-3">
-            <Pressable onPress={() => openSection("profile")} className="mb-1.5 flex-row items-center justify-between rounded-[16px] bg-white px-3.5 py-3">
-              <View className="flex-row items-center">
-                <Text className="mr-3 text-[16px]">👤</Text>
-                <Text className="text-[14px] font-semibold text-ink">Change user info</Text>
+        <View className="mt-4">
+          <Pressable
+            onPress={() => openSection("profile")}
+            className={`mb-2.5 flex-row items-center justify-between rounded-[20px] border px-3.5 py-3.5 ${activeSection === "profile" ? "border-indigo-200 bg-indigo-50" : "border-slate-200 bg-white"}`}
+          >
+            <View className="flex-row items-center">
+              <View className={`mr-3 h-11 w-11 items-center justify-center rounded-[16px] ${activeSection === "profile" ? "bg-indigo-100" : "bg-slate-50"}`}>
+                <Text className="text-[18px]">👤</Text>
               </View>
-              <Text className="text-base text-slate-300">›</Text>
-            </Pressable>
-            <Pressable onPress={() => openSection("password")} className="mb-1.5 flex-row items-center justify-between rounded-[16px] bg-white px-3.5 py-3">
-              <View className="flex-row items-center">
-                <Text className="mr-3 text-[16px]">🔐</Text>
-                <Text className="text-[14px] font-semibold text-ink">Change password</Text>
+              <View>
+                <Text className="text-[14px] font-semibold text-ink">User info</Text>
+                <Text className="mt-0.5 text-[12px] text-slate-500">Name and profile</Text>
               </View>
-              <Text className="text-base text-slate-300">›</Text>
-            </Pressable>
-            {user?.role === "admin" ? (
-              <Pressable onPress={() => openSection("admin")} className="mb-1.5 flex-row items-center justify-between rounded-[16px] bg-white px-3.5 py-3">
-                <View className="flex-row items-center">
-                  <Text className="mr-3 text-[16px]">🛠️</Text>
-                  <Text className="text-[14px] font-semibold text-ink">Admin tools</Text>
-                </View>
-                <Text className="text-base text-slate-300">›</Text>
-              </Pressable>
-            ) : null}
-            <Pressable onPress={() => openSection("delete")} className="mb-1.5 flex-row items-center justify-between rounded-[16px] bg-rose-50 px-3.5 py-3">
-              <View className="flex-row items-center">
-                <Text className="mr-3 text-[16px]">🗑️</Text>
-                <Text className="text-[14px] font-semibold text-rose-700">Delete account</Text>
+            </View>
+            <Text className="text-base text-slate-300">›</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => openSection("password")}
+            className={`mb-2.5 flex-row items-center justify-between rounded-[20px] border px-3.5 py-3.5 ${activeSection === "password" ? "border-sky-200 bg-sky-50" : "border-slate-200 bg-white"}`}
+          >
+            <View className="flex-row items-center">
+              <View className={`mr-3 h-11 w-11 items-center justify-center rounded-[16px] ${activeSection === "password" ? "bg-sky-100" : "bg-slate-50"}`}>
+                <Text className="text-[18px]">🔐</Text>
               </View>
-              <Text className="text-base text-rose-300">›</Text>
-            </Pressable>
+              <View>
+                <Text className="text-[14px] font-semibold text-ink">Password</Text>
+                <Text className="mt-0.5 text-[12px] text-slate-500">Keep it secure</Text>
+              </View>
+            </View>
+            <Text className="text-base text-slate-300">›</Text>
+          </Pressable>
+          {user?.role === "admin" ? (
             <Pressable
-              onPress={() => {
-                setMenuOpen(false);
-                signOut();
-              }}
-              className="flex-row items-center justify-between rounded-[16px] bg-slate-900 px-3.5 py-3"
+              onPress={() => openSection("admin")}
+              className={`mb-2.5 flex-row items-center justify-between rounded-[20px] border px-3.5 py-3.5 ${activeSection === "admin" ? "border-amber-200 bg-amber-50" : "border-slate-200 bg-white"}`}
             >
               <View className="flex-row items-center">
-                <Text className="mr-3 text-[16px]">↩️</Text>
-                <Text className="text-[14px] font-semibold text-white">Logout</Text>
+                <View className={`mr-3 h-11 w-11 items-center justify-center rounded-[16px] ${activeSection === "admin" ? "bg-amber-100" : "bg-slate-50"}`}>
+                  <Text className="text-[18px]">🛠️</Text>
+                </View>
+                <View>
+                  <Text className="text-[14px] font-semibold text-ink">Admin tools</Text>
+                  <Text className="mt-0.5 text-[12px] text-slate-500">Family controls</Text>
+                </View>
               </View>
-              <Text className="text-base text-slate-400">›</Text>
+              <Text className="text-base text-slate-300">›</Text>
             </Pressable>
-          </View>
-        ) : null}
+          ) : null}
+          <Pressable
+            onPress={() => openSection("delete")}
+            className={`flex-row items-center justify-between rounded-[20px] border px-3.5 py-3.5 ${activeSection === "delete" ? "border-rose-200 bg-rose-50" : "border-rose-100 bg-rose-50/70"}`}
+          >
+            <View className="flex-row items-center">
+              <View className={`mr-3 h-11 w-11 items-center justify-center rounded-[16px] ${activeSection === "delete" ? "bg-rose-100" : "bg-white/80"}`}>
+                <Text className="text-[18px]">🗑️</Text>
+              </View>
+              <View>
+                <Text className="text-[14px] font-semibold text-rose-700">Delete account</Text>
+                <Text className="mt-0.5 text-[12px] text-rose-500">Danger zone</Text>
+              </View>
+            </View>
+            <Text className="text-base text-rose-300">›</Text>
+          </Pressable>
+        </View>
       </SurfaceCard>
 
       {activeSection === "profile" ? (

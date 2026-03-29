@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, Text, View, useWindowDimensions } from "react-native";
 import { CalendarList } from "react-native-calendars";
 import { LinearGradient } from "expo-linear-gradient";
@@ -20,9 +20,10 @@ export const CalendarScreen = () => {
   const { user } = useAuth();
   const { showAlert } = useAppDialog();
   const { t, formatDate, language } = useLocale();
+  const scrollRef = useRef<ScrollView | null>(null);
   const { width } = useWindowDimensions();
   const isCompact = width < 430;
-  const calendarWidth = Math.min(width - (isCompact ? 32 : 40), 420);
+  const calendarWidth = Math.min(width - (isCompact ? 18 : 32), 392);
   const [events, setEvents] = useState<FamilyEvent[]>([]);
   const [members, setMembers] = useState<FamilyMember[]>([]);
   const [date, setDate] = useState(isoDate());
@@ -60,6 +61,9 @@ export const CalendarScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
+      requestAnimationFrame(() => {
+        scrollRef.current?.scrollTo({ y: 0, animated: false });
+      });
       load().catch(console.error);
     }, [])
   );
@@ -132,6 +136,7 @@ export const CalendarScreen = () => {
 
   return (
     <ScrollView
+      ref={scrollRef}
       className="flex-1 bg-surface"
       contentContainerStyle={{ padding: isCompact ? 16 : 20, paddingBottom: 110 }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={sectionColors.calendar} />}
@@ -168,21 +173,21 @@ export const CalendarScreen = () => {
       </LinearGradient>
 
       <SurfaceCard className={`overflow-hidden border border-slate-200/80 bg-white p-0 ${isCompact ? "rounded-[28px]" : "rounded-[34px]"}`}>
-        <View className="border-b border-slate-200/80 bg-[#F7FBFF] px-4 py-3.5">
+        <View className="border-b border-slate-200/80 bg-[#F7FBFF] px-0 py-1.5">
           <View className={`items-start ${isCompact ? "" : "flex-row justify-between"}`}>
-            <View className={`rounded-[18px] bg-sky-100 ${isCompact ? "px-3 py-2" : "px-3.5 py-2.5"}`}>
+            <View className={`rounded-[16px] bg-sky-100 ${isCompact ? "px-2.5 py-1.5" : "px-3 py-2"}`}>
               <Text className="text-[11px] font-black uppercase tracking-[1.5px] text-sky-700">
                 {compactSelectedDate}
               </Text>
             </View>
-            <Text className={`${isCompact ? "mt-2" : ""} text-[12px] font-semibold text-slate-400`}>
+            <Text className={`${isCompact ? "mt-1" : ""} text-[11px] font-semibold text-slate-400`}>
               Tap a day to see the plan
             </Text>
           </View>
         </View>
-        <View style={{ width: calendarWidth }} className="self-center bg-white px-2 pb-2 pt-1">
+        <View style={{ width: calendarWidth }} className=" bg-white px-0 pb-0.5 pt-0">
           <CalendarList
-            style={{ width: calendarWidth, alignSelf: "center" }}
+            style={{ width: calendarWidth }}
             current={normalizeDateInput(date)}
             markedDates={markedDates}
             horizontal
@@ -193,7 +198,7 @@ export const CalendarScreen = () => {
             onDayPress={(day) => setDate(normalizeDateInput(day.dateString))}
             dayComponent={({ date: day, state }) => {
               if (!day) {
-                return <View className={`${isCompact ? "h-11 w-10" : "h-12 w-11"}`} />;
+                return <View className={`${isCompact ? "h-8 w-7" : "h-9 w-8"}`} />;
               }
 
               const isSelected = day.dateString === normalizeDateInput(date);
@@ -205,10 +210,10 @@ export const CalendarScreen = () => {
               return (
                 <Pressable
                   onPress={() => setDate(normalizeDateInput(day.dateString))}
-                  className={`items-center justify-center ${isCompact ? "h-11 w-10" : "h-12 w-11"}`}
+                  className={`items-center justify-center ${isCompact ? "h-8 w-7" : "h-9 w-8"}`}
                 >
                   <View
-                    className={`items-center justify-center rounded-[16px] ${isCompact ? "h-9 w-9" : "h-10 w-10"}`}
+                    className={`items-center justify-center rounded-[12px] ${isCompact ? "h-6.5 w-6.5" : "h-7 w-7"}`}
                     style={{
                       backgroundColor: isSelected ? "#0284C7" : isToday ? "#E0F2FE" : "transparent",
                       borderWidth: isToday && !isSelected ? 1.5 : 0,
@@ -216,7 +221,7 @@ export const CalendarScreen = () => {
                     }}
                   >
                     <Text
-                      className={`${isCompact ? "text-[13px]" : "text-[15px]"} font-bold`}
+                      className={`${isCompact ? "text-[11px]" : "text-[12px]"} font-bold`}
                       style={{
                         color: isSelected ? "#FFFFFF" : isDisabled ? "#CBD5E1" : "#0F172A",
                       }}
@@ -224,12 +229,12 @@ export const CalendarScreen = () => {
                       {day.day}
                     </Text>
                   </View>
-                  <View className="mt-1 h-1.5 flex-row items-center justify-center">
+                  <View className="mt-[2px] h-1 flex-row items-center justify-center">
                     {visibleDots.map((event) => (
                       <View
                         key={event.id}
                         style={{ backgroundColor: isSelected ? "#FFFFFF" : event.colorTag }}
-                        className="mx-[1.5px] h-1.5 w-1.5 rounded-full"
+                        className="mx-[1px] h-1 w-1 rounded-full"
                       />
                     ))}
                     {dayEventsForDate.length > 3 ? (
@@ -248,8 +253,9 @@ export const CalendarScreen = () => {
               textDayFontWeight: "600",
               textMonthFontWeight: "700",
               textDayHeaderFontWeight: "700",
-              textDayFontSize: isCompact ? 13 : 15,
-              textMonthFontSize: isCompact ? 18 : 20,
+              textDayFontSize: isCompact ? 11 : 12,
+              textMonthFontSize: isCompact ? 13 : 14,
+              textDayHeaderFontSize: isCompact ? 10 : 11,
               textSectionTitleColor: "#64748B",
               textDisabledColor: "#CBD5E1",
               dayTextColor: "#0F172A",
@@ -260,14 +266,14 @@ export const CalendarScreen = () => {
         </View>
       </SurfaceCard>
 
-      <SurfaceCard className={`border border-slate-200/80 bg-[#0F172A] ${isCompact ? "rounded-[24px] p-4" : "rounded-[30px] p-5"}`}>
-        <View className="mb-3 flex-row items-center justify-between">
+      <SurfaceCard className={`border border-slate-200/80 bg-[#0F172A] ${isCompact ? "rounded-[20px] p-3" : "rounded-[26px] p-4"}`}>
+        <View className="mb-2 flex-row items-center justify-between">
           <View>
-            <Text className={`font-black tracking-[-0.2px] text-white ${isCompact ? "text-[17px]" : "text-lg"}`}>{t("calendar.addEvent")}</Text>
-            <Text className="mt-1 text-[13px] text-slate-300">Drop a plan into the family flow.</Text>
+            <Text className={`font-black tracking-[-0.2px] text-white ${isCompact ? "text-[15px]" : "text-[16px]"}`}>{t("calendar.addEvent")}</Text>
+            <Text className="mt-0.5 text-[11px] text-slate-300">Drop a plan into the family flow.</Text>
           </View>
-          <View className="rounded-full bg-white/10 px-3 py-1.5">
-            <Text className="text-[11px] font-bold uppercase tracking-[1.3px] text-sky-200">
+          <View className="rounded-full bg-white/10 px-2.5 py-1">
+            <Text className="text-[10px] font-bold uppercase tracking-[1.2px] text-sky-200">
               New plan
             </Text>
           </View>
@@ -283,7 +289,7 @@ export const CalendarScreen = () => {
         </View>
         <FormInput label={t("budget.note")} value={note} onChangeText={setNote} placeholder="Bring snacks" />
         <View className="mb-2 flex-row items-center justify-between">
-          <Text className="text-sm font-semibold text-slate-300">{t("calendar.assignTo")}</Text>
+          <Text className="text-[12px] font-semibold text-slate-300">{t("calendar.assignTo")}</Text>
           <Text className="text-xs font-semibold text-slate-500">{t("common.swipeMore")}</Text>
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-3">
@@ -300,10 +306,10 @@ export const CalendarScreen = () => {
         <PrimaryButton label={t("calendar.addEventButton")} onPress={addEvent} color={sectionColors.calendar} />
       </SurfaceCard>
 
-      <SurfaceCard className={`border border-slate-200/80 bg-white ${isCompact ? "rounded-[24px] p-4" : "rounded-[30px] p-5"}`}>
-        <View className={`mb-3 ${isCompact ? "" : "flex-row items-center justify-between"}`}>
-          <Text className={`${isCompact ? "text-[15px]" : "text-[16px]"} font-black tracking-[-0.2px] text-ink`}>{t("calendar.eventsFor", { date: compactSelectedDate })}</Text>
-          <Text className={`${isCompact ? "mt-1 text-xs" : "text-sm"} font-semibold text-slate-400`}>
+      <SurfaceCard className={`border border-slate-200/80 bg-white ${isCompact ? "rounded-[20px] p-3" : "rounded-[26px] p-4"}`}>
+        <View className={`mb-2 ${isCompact ? "" : "flex-row items-center justify-between"}`}>
+          <Text className={`${isCompact ? "text-[13px]" : "text-[14px]"} font-black tracking-[-0.2px] text-ink`}>{t("calendar.eventsFor", { date: compactSelectedDate })}</Text>
+          <Text className={`${isCompact ? "mt-1 text-[10px]" : "text-[12px]"} font-semibold text-slate-400`}>
             {t("calendar.planned", { count: dayEvents.length })}
           </Text>
         </View>
@@ -313,26 +319,26 @@ export const CalendarScreen = () => {
           dayEvents.map((event) => (
             <View
               key={event.id}
-              className={`border border-slate-200/70 bg-white ${isCompact ? "mb-2.5 rounded-[20px] pl-3 pr-3 py-3" : "mb-3 rounded-[24px] pl-4 pr-4 py-4"}`}
+              className={`border border-slate-200/70 bg-white ${isCompact ? "mb-2 rounded-[16px] pl-3 pr-3 py-2" : "mb-2 rounded-[20px] pl-3 pr-3 py-3"}`}
             >
               <View className="flex-row">
                 <View style={{ backgroundColor: event.colorTag }} className="mr-3 mt-0.5 w-1 rounded-full" />
                 <View className="flex-1">
                   <View className="flex-row items-start justify-between">
                     <View className="flex-1 pr-3">
-                      <Text className={`${isCompact ? "text-[15px]" : "text-base"} font-bold text-ink`}>{event.title}</Text>
-                      <Text className={`text-slate-500 ${isCompact ? "mt-1 text-[13px]" : "mt-1.5 text-sm"}`}>
+                      <Text className={`${isCompact ? "text-[13px]" : "text-[14px]"} font-bold text-ink`}>{event.title}</Text>
+                      <Text className={`text-slate-500 ${isCompact ? "mt-0.5 text-[11px]" : "mt-1 text-[12px]"}`}>
                         {event.time} · {event.assignedTo.name}
                       </Text>
                     </View>
-                    <View className="rounded-[14px] bg-slate-100 px-2.5 py-1">
-                      <Text className="text-[10px] font-bold uppercase tracking-[1px] text-slate-500">
+                    <View className="rounded-[12px] bg-slate-100 px-2 py-1">
+                      <Text className="text-[9px] font-bold uppercase tracking-[0.9px] text-slate-500">
                         {formatDate(event.date)}
                       </Text>
                     </View>
                   </View>
-                  {event.note ? <Text className={`text-slate-500 ${isCompact ? "mt-1 text-[13px]" : "mt-1.5 text-sm"}`}>{event.note}</Text> : null}
-                  <Text onPress={() => calendarApi.remove(event.id).then(load)} className={`${isCompact ? "mt-1.5 text-xs" : "mt-2 text-sm"} font-semibold text-rose-500`}>
+                  {event.note ? <Text className={`text-slate-500 ${isCompact ? "mt-0.5 text-[11px]" : "mt-1 text-[12px]"}`}>{event.note}</Text> : null}
+                  <Text onPress={() => calendarApi.remove(event.id).then(load)} className={`${isCompact ? "mt-1 text-[10px]" : "mt-1.5 text-[11px]"} font-semibold text-rose-500`}>
                     {t("common.delete")}
                   </Text>
                 </View>
@@ -342,26 +348,26 @@ export const CalendarScreen = () => {
         )}
       </SurfaceCard>
 
-      <SurfaceCard className={`border border-slate-200/80 bg-[#F8FAFC] ${isCompact ? "rounded-[24px] p-4" : "rounded-[30px] p-5"}`}>
-        <View className="mb-3 flex-row items-center justify-between">
-          <Text className={`font-black tracking-[-0.2px] text-ink ${isCompact ? "text-[15px]" : "text-base"}`}>{t("calendar.upcomingTitle")}</Text>
-          <Text className="text-[11px] font-bold uppercase tracking-[1.3px] text-slate-400">Agenda rail</Text>
+      <SurfaceCard className={`border border-slate-200/80 bg-[#F8FAFC] ${isCompact ? "rounded-[20px] p-3" : "rounded-[26px] p-4"}`}>
+        <View className="mb-2 flex-row items-center justify-between">
+          <Text className={`font-black tracking-[-0.2px] text-ink ${isCompact ? "text-[13px]" : "text-[14px]"}`}>{t("calendar.upcomingTitle")}</Text>
+          <Text className="text-[10px] font-bold uppercase tracking-[1.1px] text-slate-400">Agenda rail</Text>
         </View>
         {upcoming.length === 0 ? (
           <EmptyState title={t("calendar.emptyUpcomingTitle")} message={t("calendar.emptyUpcomingBody")} />
         ) : (
           upcoming.map((event) => (
-            <View key={event.id} className={`flex-row items-center border border-white bg-white ${isCompact ? "mb-2.5 rounded-[18px] px-3 py-3" : "mb-3 rounded-[22px] px-4 py-4"}`}>
+            <View key={event.id} className={`flex-row items-center border border-white bg-white ${isCompact ? "mb-2 rounded-[14px] px-3 py-2" : "mb-2 rounded-[18px] px-3 py-3"}`}>
               <View className="mr-3 items-center">
-                <View style={{ backgroundColor: event.colorTag }} className="h-3 w-3 rounded-full" />
-                <View className="mt-1 h-8 w-[2px] rounded-full bg-slate-200" />
+                <View style={{ backgroundColor: event.colorTag }} className="h-2.5 w-2.5 rounded-full" />
+                <View className="mt-1 h-7 w-[2px] rounded-full bg-slate-200" />
               </View>
               <View className="flex-1">
-                <Text className={`${isCompact ? "text-[15px]" : ""} font-semibold text-ink`}>{event.title}</Text>
-                <Text className={`${isCompact ? "text-[13px]" : "text-sm"} text-slate-500`}>
+                <Text className={`${isCompact ? "text-[13px]" : "text-[14px]"} font-semibold text-ink`}>{event.title}</Text>
+                <Text className={`${isCompact ? "text-[11px]" : "text-[12px]"} text-slate-500`}>
                   {formatDate(event.date)} · {event.time}
                 </Text>
-                <Text className={`${isCompact ? "mt-0.5 text-[13px]" : "mt-1 text-sm"} text-slate-400`}>{event.assignedTo.name}</Text>
+                <Text className={`${isCompact ? "mt-0.5 text-[11px]" : "mt-1 text-[12px]"} text-slate-400`}>{event.assignedTo.name}</Text>
               </View>
             </View>
           ))

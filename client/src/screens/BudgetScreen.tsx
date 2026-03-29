@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from "@react-navigation/native";
@@ -19,6 +19,7 @@ export const BudgetScreen = () => {
   const { user } = useAuth();
   const { showAlert } = useAppDialog();
   const { t, formatCurrency, formatDate, formatMonthLabel } = useLocale();
+  const scrollRef = useRef<ScrollView | null>(null);
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth());
   const [year] = useState(now.getFullYear());
@@ -92,6 +93,9 @@ export const BudgetScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
+      requestAnimationFrame(() => {
+        scrollRef.current?.scrollTo({ y: 0, animated: false });
+      });
       load().catch(console.error);
     }, [month, year])
   );
@@ -187,6 +191,7 @@ export const BudgetScreen = () => {
 
   return (
     <ScrollView
+      ref={scrollRef}
       className="flex-1 bg-surface"
       contentContainerStyle={{ padding: 20, paddingBottom: 110 }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={sectionColors.budget} />}
@@ -235,7 +240,7 @@ export const BudgetScreen = () => {
         <View>
           <View>
             <Text className="text-sm font-bold uppercase tracking-[1.6px] text-slate-400">{t("budget.monthlySummary")}</Text>
-            <Text className="mt-1.5 text-lg font-black tracking-[-0.3px] text-ink">{formatMonthLabel(month, year)}</Text>
+            <Text className="mt-1.5 text-[17px] font-black tracking-[-0.2px] text-ink">{formatMonthLabel(month, year)}</Text>
           </View>
         </View>
         <View className="mt-4 flex-row">
@@ -297,11 +302,11 @@ export const BudgetScreen = () => {
                   {canManageIncome(item) ? (
                     <View className="items-end">
                       <Pressable onPress={() => openIncomeEditor(item)} className="mb-1.5 px-1 py-0.5">
-                        <Text className="text-xs font-bold" style={{ color: sectionColors.budget }}>
+                        <Text className="text-[13px] font-bold" style={{ color: sectionColors.budget }}>
                           {t("common.edit")}
                         </Text>
                       </Pressable>
-                      <Text onPress={() => budgetApi.deleteIncome(item.id).then(load)} className="text-xs font-semibold text-rose-500">
+                      <Text onPress={() => budgetApi.deleteIncome(item.id).then(load)} className="text-[13px] font-bold text-rose-500">
                         {t("common.delete")}
                       </Text>
                     </View>
@@ -325,7 +330,7 @@ export const BudgetScreen = () => {
               className={`self-start rounded-full px-3.5 py-1.5 ${showIncomeForm && !editingIncomeId ? "bg-slate-100" : "bg-amber-50"}`}
             >
               <Text
-                className="text-sm font-bold"
+                className="text-[13px] font-bold"
                 style={{ color: showIncomeForm && !editingIncomeId ? "#64748B" : sectionColors.budget }}
               >
                 {showIncomeForm && !editingIncomeId ? t("common.cancel") : t("budget.addAnotherAmount")}
@@ -411,7 +416,7 @@ export const BudgetScreen = () => {
                   </Text>
                 </View>
                 <Text className="mr-3 text-sm font-bold text-amber-700">{formatCurrency(item.amount)}</Text>
-                <Text onPress={() => budgetApi.deleteExpense(item.id).then(load)} className="text-xs font-semibold text-rose-500">
+                <Text onPress={() => budgetApi.deleteExpense(item.id).then(load)} className="text-[13px] font-bold text-rose-500">
                   {t("common.delete")}
                 </Text>
               </View>

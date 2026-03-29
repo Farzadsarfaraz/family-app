@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
@@ -21,6 +21,7 @@ export const HomeScreen = () => {
   const { user, family } = useAuth();
   const { t, formatDate, formatCurrency } = useLocale();
   const navigation = useNavigation<any>();
+  const scrollRef = useRef<ScrollView | null>(null);
   const [dashboard, setDashboard] = useState(initialDashboard);
   const [members, setMembers] = useState<FamilyMember[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -33,6 +34,9 @@ export const HomeScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
+      requestAnimationFrame(() => {
+        scrollRef.current?.scrollTo({ y: 0, animated: false });
+      });
       load().catch(console.error);
     }, [])
   );
@@ -87,6 +91,7 @@ export const HomeScreen = () => {
 
   return (
     <ScrollView
+      ref={scrollRef}
       className="flex-1 bg-surface"
       contentContainerStyle={{ padding: 20, paddingBottom: 110 }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4F46E5" />}

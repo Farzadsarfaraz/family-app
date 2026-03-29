@@ -46,7 +46,8 @@ const deleteAccountSchema = z.object({
 export const register = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const input = registerSchema.parse(req.body);
-    const existing = await User.findOne({ email: input.email.toLowerCase() });
+    const normalizedEmail = input.email.toLowerCase();
+    const existing = await User.findOne({ email: normalizedEmail });
 
     if (existing) {
       throw new HttpError(409, "An account with that email already exists.");
@@ -54,7 +55,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
 
     const user = await User.create({
       name: input.name,
-      email: input.email,
+      email: normalizedEmail,
       passwordHash: await hashPassword(input.password),
       avatarColor: input.avatarColor,
       role: input.inviteCode ? "member" : "admin",
@@ -148,6 +149,10 @@ export const joinFamily = async (req: Request, res: Response, next: NextFunction
 
     if (!user || !family) {
       throw new HttpError(404, "Invite code not found.");
+    }
+
+    if (user.familyId) {
+      throw new HttpError(409, "This account already belongs to a family. Please log in instead. If you want to join another family, you have to delete your account first.");
     }
 
     user.familyId = family._id;
