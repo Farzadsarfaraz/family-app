@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const storageKeys = {
   auth: "family_app_auth",
+  groceryCustomCategories: "family_app_grocery_custom_categories",
 };
 
 export const storage = {

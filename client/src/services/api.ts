@@ -32,6 +32,8 @@ export const authApi = {
 
 export const familyApi = {
   getFamily: () => unwrap<{ family: Family; members: FamilyMember[] }>(api.get("/family")),
+  updateMyPreferences: (payload: { shareBudget: boolean }) =>
+    unwrap<{ id: string; shareBudget: boolean }>(api.patch("/family/me/preferences", payload)),
 };
 
 export const dashboardApi = {
@@ -54,8 +56,12 @@ export const budgetApi = {
     ),
   createIncome: (payload: { memberId: string; amount: number; month: number; year: number; note?: string }) =>
     unwrap<Income>(api.post("/budget/income", payload)),
+  updateIncome: (id: string, payload: { memberId: string; amount: number; month: number; year: number; note?: string }) =>
+    unwrap<Income>(api.patch(`/budget/income/${id}`, payload)),
   createExpense: (payload: { memberId: string; amount: number; category: string; description: string; date: string }) =>
     unwrap<Expense>(api.post("/budget/expenses", payload)),
+  resetMonth: (month: number, year: number) =>
+    unwrap<{ success: boolean }>(api.delete(`/budget/reset-month?month=${month}&year=${year}`)),
   deleteIncome: (id: string) => unwrap<{ success: boolean }>(api.delete(`/budget/income/${id}`)),
   deleteExpense: (id: string) => unwrap<{ success: boolean }>(api.delete(`/budget/expenses/${id}`)),
 };
