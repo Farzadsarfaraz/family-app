@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Alert, Platform, Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useAuth } from "../context/AuthContext";
+import { useAppDialog } from "../context/AppDialogContext";
 import { useLocale } from "../context/LocaleContext";
 import { avatarPalette } from "../constants/theme";
 import { EasyFamilyLogo } from "../components/branding/EasyFamilyLogo";
@@ -12,6 +13,7 @@ import { SurfaceCard } from "../components/SurfaceCard";
 
 export const AuthScreen = () => {
   const { signIn, signUp } = useAuth();
+  const { showAlert } = useAppDialog();
   const { t } = useLocale();
   const [mode, setMode] = useState<"login" | "register">("register");
   const [joinExisting, setJoinExisting] = useState(false);
@@ -24,14 +26,6 @@ export const AuthScreen = () => {
   const [saving, setSaving] = useState(false);
 
   const isEmailValid = (value: string) => /\S+@\S+\.\S+/.test(value.trim());
-  const showAlert = (title: string, message: string) => {
-    if (Platform.OS === "web" && typeof window !== "undefined") {
-      window.alert(`${title}\n\n${message}`);
-      return;
-    }
-
-    Alert.alert(title, message);
-  };
 
   const submit = async () => {
     const trimmedEmail = email.trim();
@@ -40,38 +34,38 @@ export const AuthScreen = () => {
     const trimmedInviteCode = inviteCode.trim().toUpperCase();
 
     if (!trimmedEmail) {
-      showAlert(t("auth.emailRequired"), t("auth.emailRequiredBody"));
+      showAlert({ title: t("auth.emailRequired"), message: t("auth.emailRequiredBody") });
       return;
     }
 
     if (!password) {
-      showAlert(t("auth.passwordRequired"), t("auth.passwordRequiredBody"));
+      showAlert({ title: t("auth.passwordRequired"), message: t("auth.passwordRequiredBody") });
       return;
     }
 
     if (!isEmailValid(trimmedEmail)) {
-      showAlert(t("auth.invalidEmail"), t("auth.invalidEmailBody"));
+      showAlert({ title: t("auth.invalidEmail"), message: t("auth.invalidEmailBody") });
       return;
     }
 
     if (password.length < 6) {
-      showAlert(t("auth.passwordShort"), t("auth.passwordShortBody"));
+      showAlert({ title: t("auth.passwordShort"), message: t("auth.passwordShortBody") });
       return;
     }
 
     if (mode === "register") {
       if (!trimmedName) {
-        showAlert(t("auth.missingName"), t("auth.missingNameBody"));
+        showAlert({ title: t("auth.missingName"), message: t("auth.missingNameBody") });
         return;
       }
 
       if (joinExisting && trimmedInviteCode.length < 6) {
-        showAlert(t("auth.inviteNeeded"), t("auth.inviteNeededBody"));
+        showAlert({ title: t("auth.inviteNeeded"), message: t("auth.inviteNeededBody") });
         return;
       }
 
       if (!joinExisting && trimmedFamilyName.length < 2) {
-        showAlert(t("auth.familyNameNeeded"), t("auth.familyNameNeededBody"));
+        showAlert({ title: t("auth.familyNameNeeded"), message: t("auth.familyNameNeededBody") });
         return;
       }
     }
@@ -94,13 +88,13 @@ export const AuthScreen = () => {
       const message = error?.response?.data?.error || "Please check your details and try again.";
 
       if (message === "Incorrect email or password.") {
-        showAlert(t("auth.loginFailed"), t("auth.loginFailedBody"));
+        showAlert({ title: t("auth.loginFailed"), message: t("auth.loginFailedBody") });
       } else if (message === "An account with that email already exists.") {
-        showAlert(t("auth.accountExists"), t("auth.accountExistsBody"));
+        showAlert({ title: t("auth.accountExists"), message: t("auth.accountExistsBody") });
       } else if (message === "Invite code not found.") {
-        showAlert(t("auth.inviteNotFound"), t("auth.inviteNotFoundBody"));
+        showAlert({ title: t("auth.inviteNotFound"), message: t("auth.inviteNotFoundBody") });
       } else {
-        showAlert(t("auth.couldNotContinue"), message);
+        showAlert({ title: t("auth.couldNotContinue"), message });
       }
     } finally {
       setSaving(false);

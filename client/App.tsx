@@ -1,8 +1,10 @@
+import "../global.css";
 import "react-native-gesture-handler";
 import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider } from "./src/context/AuthContext";
+import { AppDialogProvider } from "./src/context/AppDialogContext";
 import { LocaleProvider } from "./src/context/LocaleContext";
 import { RootNavigator } from "./src/navigation/RootNavigator";
 
@@ -11,8 +13,10 @@ export default function App() {
     <SafeAreaProvider>
       <LocaleProvider>
         <AuthProvider>
-          <StatusBar style="dark" />
-          <RootNavigator />
+          <AppDialogProvider>
+            <StatusBar style="dark" />
+            <RootNavigator />
+          </AppDialogProvider>
         </AuthProvider>
       </LocaleProvider>
     </SafeAreaProvider>

@@ -36,6 +36,9 @@ export const authApi = {
 
 export const familyApi = {
   getFamily: () => unwrap<{ family: Family; members: FamilyMember[] }>(api.get("/family")),
+  promoteMember: (memberId: string) => unwrap<{ success: boolean }>(api.patch(`/family/members/${memberId}/promote`)),
+  removeMember: (memberId: string) => unwrap<{ success: boolean }>(api.delete(`/family/members/${memberId}`)),
+  deleteFamily: (payload: { password: string }) => unwrap<{ success: boolean }>(api.delete("/family", { data: payload })),
 };
 
 export const dashboardApi = {

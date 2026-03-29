@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { Alert, Platform, Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
+import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from "@react-navigation/native";
 import { EmptyState } from "../components/EmptyState";
@@ -8,6 +8,7 @@ import { FormInput } from "../components/FormInput";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { SurfaceCard } from "../components/SurfaceCard";
 import { useAuth } from "../context/AuthContext";
+import { useAppDialog } from "../context/AppDialogContext";
 import { translateExpenseCategory, useLocale } from "../context/LocaleContext";
 import { expenseCategories, sectionColors } from "../constants/theme";
 import { budgetApi, familyApi } from "../services/api";
@@ -16,6 +17,7 @@ import { isoDate } from "../utils/format";
 
 export const BudgetScreen = () => {
   const { user } = useAuth();
+  const { showAlert } = useAppDialog();
   const { t, formatCurrency, formatDate, formatMonthLabel } = useLocale();
   const now = new Date();
   const [month, setMonth] = useState(now.getMonth());
@@ -62,15 +64,6 @@ export const BudgetScreen = () => {
     [user?.id]
   );
 
-  const showAlert = (title: string, message: string) => {
-    if (Platform.OS === "web" && typeof window !== "undefined") {
-      window.alert(`${title}\n\n${message}`);
-      return;
-    }
-
-    Alert.alert(title, message);
-  };
-
   const load = async () => {
     const [familyData, budgetData] = await Promise.all([familyApi.getFamily(), budgetApi.get(month, year)]);
     setMembers(familyData.members);
@@ -114,12 +107,12 @@ export const BudgetScreen = () => {
     const targetMemberId = editingIncomeMemberId || user?.id || selectedMember;
 
     if (!targetMemberId) {
-      showAlert(t("budget.alert.memberRequired"), t("budget.alert.memberRequiredBody"));
+      showAlert({ title: t("budget.alert.memberRequired"), message: t("budget.alert.memberRequiredBody") });
       return;
     }
 
     if (!incomeAmount.trim() || Number.isNaN(parsedAmount) || parsedAmount < 0) {
-      showAlert(t("budget.alert.validIncome"), t("budget.alert.validIncomeBody"));
+      showAlert({ title: t("budget.alert.validIncome"), message: t("budget.alert.validIncomeBody") });
       return;
     }
 
@@ -139,10 +132,11 @@ export const BudgetScreen = () => {
       setShowIncomeForm(false);
       await load();
     } catch (error: any) {
-      showAlert(
-        editingIncomeId ? t("budget.alert.couldNotUpdateIncome") : t("budget.alert.couldNotAddIncome"),
-        error?.response?.data?.error || "Try again."
-      );
+      showAlert({
+        title: editingIncomeId ? t("budget.alert.couldNotUpdateIncome") : t("budget.alert.couldNotAddIncome"),
+        message: error?.response?.data?.error || "Try again.",
+        tone: "danger",
+      });
     }
   };
 
@@ -166,7 +160,7 @@ export const BudgetScreen = () => {
     const trimmedCustomCategory = customExpenseCategory.trim();
 
     if (showCustomExpenseCategoryInput && !trimmedCustomCategory) {
-      showAlert(t("budget.alert.categoryRequired"), t("budget.alert.categoryRequiredBody"));
+      showAlert({ title: t("budget.alert.categoryRequired"), message: t("budget.alert.categoryRequiredBody") });
       return;
     }
 
@@ -187,7 +181,7 @@ export const BudgetScreen = () => {
       setExpenseDate(isoDate());
       await load();
     } catch (error: any) {
-      showAlert(t("budget.alert.couldNotAddExpense"), error?.response?.data?.error || "Try again.");
+      showAlert({ title: t("budget.alert.couldNotAddExpense"), message: error?.response?.data?.error || "Try again.", tone: "danger" });
     }
   };
 
@@ -200,6 +194,14 @@ export const BudgetScreen = () => {
       <LinearGradient colors={["#7C2D12", "#9A3412", "#C2410C"]} className="mb-5 overflow-hidden rounded-[32px] px-6 py-5">
         <View className="absolute -right-10 -top-8 h-36 w-36 rounded-full bg-white/10" />
         <View className="absolute left-6 bottom-6 h-20 w-20 rounded-full bg-amber-200/10" />
+        <View className="absolute right-5 top-5 rotate-[7deg] px-3 py-3">
+          <Text className="text-[26px]">💵</Text>
+          <Text className="mt-2 text-[10px] font-bold uppercase tracking-[1.4px] text-white/80">Income</Text>
+        </View>
+        <View className="absolute right-20 top-14 -rotate-[8deg] px-3 py-3">
+          <Text className="text-[24px]">🧾</Text>
+          <Text className="mt-2 text-[10px] font-bold uppercase tracking-[1.4px] text-white/70">Bills</Text>
+        </View>
 
         <Text className="text-xs font-bold uppercase tracking-[2px] text-orange-100">{t("budget.hero.badge")}</Text>
         <Text className="mt-2 text-[20px] font-black leading-7 text-white">{t("budget.hero.title")}</Text>
@@ -259,8 +261,22 @@ export const BudgetScreen = () => {
       </SurfaceCard>
 
       <SurfaceCard className="rounded-[28px] border border-white/70 bg-white/95 p-4">
-        <View className="mb-1 flex-row items-center justify-between">
+        <View className="mb-1 flex-row items-center">
           <Text className="text-[17px] font-black tracking-[-0.2px] text-ink">{editingIncomeId ? t("budget.editMonthlyIncome") : t("budget.monthlyIncome")}</Text>
+          <Pressable
+            onPress={() =>
+              showAlert({
+                title: "How monthly income works",
+                message:
+                  "Each person adds their own monthly income here. You can add more than one amount in the same month, and the entries are added together in the monthly summary. Only the person who added an income can edit or delete that income.",
+              })
+            }
+            className="ml-2 h-6 w-6 items-center justify-center rounded-full border border-amber-200 bg-amber-50"
+          >
+            <Text className="text-[12px] font-black" style={{ color: sectionColors.budget }}>
+              i
+            </Text>
+          </Pressable>
         </View>
         <Text className="mb-3 text-sm text-slate-500">
           {incomes.length > 0
