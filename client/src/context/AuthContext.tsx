@@ -18,6 +18,9 @@ type AuthState = {
     familyName?: string;
     inviteCode?: string;
   }) => Promise<void>;
+  updateMe: (payload: { name: string }) => Promise<void>;
+  changePassword: (payload: { currentPassword: string; newPassword: string }) => Promise<void>;
+  deleteMe: (payload: { password: string }) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -73,6 +76,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       signUp: async (payload) => {
         const response = await authApi.register(payload);
         await persist(response.token, response.user, response.family);
+      },
+      updateMe: async ({ name }) => {
+        const response = await authApi.updateMe({ name });
+        if (!token || !family) {
+          setUser(response.user);
+          return;
+        }
+
+        await persist(token, response.user, family);
+      },
+      changePassword: async ({ currentPassword, newPassword }) => {
+        await authApi.changePassword({ currentPassword, newPassword });
+      },
+      deleteMe: async ({ password }) => {
+        await authApi.deleteMe({ password });
+        setAuthToken(null);
+        setToken(null);
+        setUser(null);
+        setFamily(null);
+        await storage.remove(storageKeys.auth);
       },
       signOut: async () => {
         setAuthToken(null);

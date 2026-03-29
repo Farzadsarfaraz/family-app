@@ -6,7 +6,6 @@ export interface UserDocument {
   passwordHash: string;
   role: "admin" | "member";
   avatarColor: string;
-  shareBudget: boolean;
   familyId: Types.ObjectId | null;
   createdAt: Date;
   updatedAt: Date;
@@ -19,7 +18,6 @@ const userSchema = new Schema<UserDocument>(
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ["admin", "member"], default: "member" },
     avatarColor: { type: String, required: true },
-    shareBudget: { type: Boolean, default: true },
     familyId: { type: Schema.Types.ObjectId, ref: "Family", default: null, index: true },
   },
   { timestamps: true }

@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import { z } from "zod";
 import { Income } from "../models/Income";
 import { Expense } from "../models/Expense";
-import { User } from "../models/User";
 import { HttpError, ok } from "../utils/http";
 
 const serializeBudgetMember = (member: any) => ({
@@ -35,46 +34,26 @@ const getMonthRange = (month: number, year: number) => {
 
 export const getBudget = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const requesterId = req.user?.userId;
     const familyId = req.user?.familyId;
     const month = Number(req.query.month);
     const year = Number(req.query.year);
 
-    if (!familyId || !requesterId || Number.isNaN(month) || Number.isNaN(year)) {
+    if (!familyId || Number.isNaN(month) || Number.isNaN(year)) {
       throw new HttpError(400, "Month and year are required.");
     }
 
     const { start, end } = getMonthRange(month, year);
 
-    const [familyMembers, incomes, expenses] = await Promise.all([
-      User.find({ familyId }).select("_id shareBudget"),
+    const [incomes, expenses] = await Promise.all([
       Income.find({ familyId, month, year }).populate("memberId", "name avatarColor"),
       Expense.find({ familyId, date: { $gte: start, $lte: end } }).populate("memberId", "name avatarColor"),
     ]);
 
-    const visibleMemberIds = new Set(
-      familyMembers
-        .filter((member) => member.shareBudget || member._id.toString() === requesterId)
-        .map((member) => member._id.toString())
-    );
-
-    const visibleIncomes = incomes.filter((item) => {
-      const member = item.memberId as { _id?: { toString(): string } } | null;
-      const memberId = member?._id?.toString?.();
-      return memberId ? visibleMemberIds.has(memberId) : false;
-    });
-
-    const visibleExpenses = expenses.filter((item) => {
-      const member = item.memberId as { _id?: { toString(): string } } | null;
-      const memberId = member?._id?.toString?.();
-      return memberId ? visibleMemberIds.has(memberId) : false;
-    });
-
-    const totalIncome = visibleIncomes.reduce((sum, item) => sum + item.amount, 0);
-    const totalExpenses = visibleExpenses.reduce((sum, item) => sum + item.amount, 0);
+    const totalIncome = incomes.reduce((sum, item) => sum + item.amount, 0);
+    const totalExpenses = expenses.reduce((sum, item) => sum + item.amount, 0);
 
     return ok(res, {
-      incomes: visibleIncomes.map((item) => ({
+      incomes: incomes.map((item) => ({
         id: item._id.toString(),
         amount: item.amount,
         month: item.month,
@@ -82,7 +61,7 @@ export const getBudget = async (req: Request, res: Response, next: NextFunction)
         note: item.note ?? "",
         member: serializeBudgetMember(item.memberId),
       })),
-      expenses: visibleExpenses.map((item) => ({
+      expenses: expenses.map((item) => ({
         id: item._id.toString(),
         amount: item.amount,
         category: item.category,
@@ -105,10 +84,15 @@ export const getBudget = async (req: Request, res: Response, next: NextFunction)
 export const createIncome = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const familyId = req.user?.familyId;
+    const userId = req.user?.userId;
     const input = incomeSchema.parse(req.body);
 
-    if (!familyId) {
+    if (!familyId || !userId) {
       throw new HttpError(401, "Unauthorized.");
+    }
+
+    if (input.memberId !== userId) {
+      throw new HttpError(403, "You can only add income for your own account.");
     }
 
     const item = await Income.create({ ...input, familyId });
@@ -121,14 +105,19 @@ export const createIncome = async (req: Request, res: Response, next: NextFuncti
 export const updateIncome = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const familyId = req.user?.familyId;
+    const userId = req.user?.userId;
     const input = incomeSchema.parse(req.body);
 
-    if (!familyId) {
+    if (!familyId || !userId) {
       throw new HttpError(401, "Unauthorized.");
     }
 
+    if (input.memberId !== userId) {
+      throw new HttpError(403, "You can only update your own income.");
+    }
+
     const item = await Income.findOneAndUpdate(
-      { _id: req.params.id, familyId },
+      { _id: req.params.id, familyId, memberId: userId },
       input,
       { new: true }
     );
@@ -167,7 +156,13 @@ export const createExpense = async (req: Request, res: Response, next: NextFunct
 export const deleteIncome = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const familyId = req.user?.familyId;
-    const item = await Income.findOneAndDelete({ _id: req.params.id, familyId });
+    const userId = req.user?.userId;
+
+    if (!familyId || !userId) {
+      throw new HttpError(401, "Unauthorized.");
+    }
+
+    const item = await Income.findOneAndDelete({ _id: req.params.id, familyId, memberId: userId });
 
     if (!item) {
       throw new HttpError(404, "Income not found.");

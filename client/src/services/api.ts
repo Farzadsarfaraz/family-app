@@ -28,12 +28,14 @@ export const authApi = {
   login: (payload: { email: string; password: string }) =>
     unwrap<{ token: string; user: User; family: Family }>(api.post("/auth/login", payload)),
   me: () => unwrap<{ user: User; family: Family }>(api.get("/auth/me")),
+  updateMe: (payload: { name: string }) => unwrap<{ user: User }>(api.patch("/auth/me", payload)),
+  changePassword: (payload: { currentPassword: string; newPassword: string }) =>
+    unwrap<{ success: boolean }>(api.patch("/auth/me/password", payload)),
+  deleteMe: (payload: { password: string }) => unwrap<{ success: boolean }>(api.delete("/auth/me", { data: payload })),
 };
 
 export const familyApi = {
   getFamily: () => unwrap<{ family: Family; members: FamilyMember[] }>(api.get("/family")),
-  updateMyPreferences: (payload: { shareBudget: boolean }) =>
-    unwrap<{ id: string; shareBudget: boolean }>(api.patch("/family/me/preferences", payload)),
 };
 
 export const dashboardApi = {

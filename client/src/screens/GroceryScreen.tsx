@@ -219,13 +219,13 @@ export const GroceryScreen = () => {
         ))}
       </ScrollView>
 
-      <SurfaceCard className="flex-row items-center justify-between rounded-[24px] bg-white px-5 py-4">
+      <SurfaceCard className="flex-row items-center justify-between rounded-[20px] bg-white px-4 py-3">
         <View>
-          <Text className="text-sm font-bold uppercase tracking-[1.5px] text-slate-400">{t("grocery.currentView")}</Text>
-          <Text className="mt-1 text-base font-semibold text-ink">{filter === "All" ? t("grocery.allCategories") : translateGroceryCategory(filter, t)}</Text>
+          <Text className="text-xs font-bold uppercase tracking-[1.4px] text-slate-400">{t("grocery.currentView")}</Text>
+          <Text className="mt-0.5 text-sm font-semibold text-ink">{filter === "All" ? t("grocery.allCategories") : translateGroceryCategory(filter, t)}</Text>
         </View>
-        <Pressable onPress={() => groceryApi.clearCompleted().then(load)} className="rounded-full bg-green-50 px-4 py-2">
-          <Text className="text-sm font-bold" style={{ color: sectionColors.grocery }}>
+        <Pressable onPress={() => groceryApi.clearCompleted().then(load)} className="rounded-full bg-green-50 px-3 py-1.5">
+          <Text className="text-xs font-bold" style={{ color: sectionColors.grocery }}>
             {t("grocery.clearCompleted")}
           </Text>
         </Pressable>
@@ -235,29 +235,37 @@ export const GroceryScreen = () => {
         <EmptyState title={t("grocery.emptyTitle")} message={t("grocery.emptyBody")} />
       ) : (
         filteredItems.map((item) => (
-          <SurfaceCard key={item.id} className="rounded-[28px] p-0 overflow-hidden">
-            <View className="flex-row items-center">
-              <View style={{ backgroundColor: item.isChecked ? "#DCFCE7" : "#ECFDF5" }} className="h-full w-4" />
-              <View className="flex-1 flex-row items-center px-4 py-4">
-              <Pressable
-                onPress={() => groceryApi.update(item.id, { isChecked: !item.isChecked }).then(load)}
-                style={{ borderColor: sectionColors.grocery, backgroundColor: item.isChecked ? sectionColors.grocery : "#FFFFFF" }}
-                className="mr-4 h-7 w-7 rounded-full border-2"
-              />
-              <View className="flex-1">
-                <Text className={`text-lg font-semibold ${item.isChecked ? "text-slate-400 line-through" : "text-ink"}`}>{item.name}</Text>
-                <View className="mt-2 flex-row items-center">
-                  <View className="mr-2 rounded-full bg-green-50 px-3 py-1">
-                    <Text className="text-xs font-bold" style={{ color: sectionColors.grocery }}>
+          <SurfaceCard key={item.id} className="overflow-hidden rounded-[18px] border border-slate-200/80 bg-white/95 p-0">
+            <View className="flex-row items-stretch">
+              <View style={{ backgroundColor: item.isChecked ? "#22C55E" : "#BBF7D0" }} className="w-1.5" />
+              <View className="flex-1 flex-row items-center px-3 py-2">
+                <Pressable
+                  onPress={() => groceryApi.update(item.id, { isChecked: !item.isChecked }).then(load)}
+                  style={{ borderColor: item.isChecked ? "#16A34A" : "#86EFAC", backgroundColor: item.isChecked ? "#16A34A" : "#F8FAFC" }}
+                  className="mr-2.5 h-5 w-5 items-center justify-center rounded-full border-2"
+                >
+                  {item.isChecked ? <Text className="text-[10px] font-black text-white">✓</Text> : null}
+                </Pressable>
+                <View className="flex-1 pr-3">
+                  <View className="flex-row items-start justify-between">
+                    <Text className={`flex-1 pr-3 text-base font-bold tracking-[-0.15px] ${item.isChecked ? "text-slate-400 line-through" : "text-ink"}`}>
+                      {item.name}
+                    </Text>
+                    <Text className="text-[10px] font-bold uppercase tracking-[1.1px] text-slate-400">
+                      {t("grocery.qty", { count: item.quantity })}
+                    </Text>
+                  </View>
+                  <View className="mt-1 self-start rounded-full border border-green-100 bg-green-50 px-2.5 py-0.5">
+                    <Text className="text-[10px] font-black uppercase tracking-[0.9px]" style={{ color: sectionColors.grocery }}>
                       {translateGroceryCategory(item.category, t)}
                     </Text>
                   </View>
-                  <Text className="text-sm font-semibold text-slate-500">{t("grocery.qty", { count: item.quantity })}</Text>
                 </View>
-              </View>
-              <Text onPress={() => groceryApi.remove(item.id).then(load)} className="text-sm font-semibold text-rose-500">
-                {t("common.delete")}
-              </Text>
+                <Pressable onPress={() => groceryApi.remove(item.id).then(load)} className="rounded-full bg-rose-50 px-2.5 py-1.5">
+                  <Text className="text-[10px] font-black uppercase tracking-[0.9px] text-rose-500">
+                    {t("common.delete")}
+                  </Text>
+                </Pressable>
               </View>
             </View>
           </SurfaceCard>

@@ -4,7 +4,6 @@ export const serializeUser = (user: {
   email: string;
   role: "admin" | "member";
   avatarColor: string;
-  shareBudget: boolean;
   familyId: { toString(): string } | null;
 }) => ({
   id: user._id.toString(),
@@ -12,6 +11,5 @@ export const serializeUser = (user: {
   email: user.email,
   role: user.role,
   avatarColor: user.avatarColor,
-  shareBudget: user.shareBudget,
   familyId: user.familyId ? user.familyId.toString() : null,
 });

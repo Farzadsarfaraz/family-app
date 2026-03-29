@@ -12,6 +12,7 @@ import { GroceryScreen } from "../screens/GroceryScreen";
 import { BudgetScreen } from "../screens/BudgetScreen";
 import { CalendarScreen } from "../screens/CalendarScreen";
 import { ChoresScreen } from "../screens/ChoresScreen";
+import { AccountScreen } from "../screens/AccountScreen";
 
 const Stack = createNativeStackNavigator();
 const Tabs = createBottomTabNavigator();
@@ -34,6 +35,7 @@ const TabNavigator = () => {
         Budget: sectionColors.budget,
         Calendar: sectionColors.calendar,
         Chores: sectionColors.chores,
+        More: "#334155",
       }[route.name],
       tabBarStyle: {
         height: 76,
@@ -45,7 +47,7 @@ const TabNavigator = () => {
       tabBarLabelStyle: { fontSize: 12, fontWeight: "700" },
       tabBarIcon: ({ color }) => (
         <Text style={{ color, fontSize: 20 }}>
-          {route.name === "Home" ? "🏠" : route.name === "Grocery" ? "🛒" : route.name === "Budget" ? "💰" : route.name === "Calendar" ? "📅" : "✅"}
+          {route.name === "Home" ? "🏠" : route.name === "Grocery" ? "🛒" : route.name === "Budget" ? "💰" : route.name === "Calendar" ? "📅" : route.name === "Chores" ? "✅" : "☰"}
         </Text>
       ),
     })}
@@ -55,6 +57,7 @@ const TabNavigator = () => {
       <Tabs.Screen name="Budget" component={BudgetScreen} options={{ tabBarLabel: t("nav.budget") }} />
       <Tabs.Screen name="Calendar" component={CalendarScreen} options={{ tabBarLabel: t("nav.calendar") }} />
       <Tabs.Screen name="Chores" component={ChoresScreen} options={{ tabBarLabel: t("nav.chores") }} />
+      <Tabs.Screen name="More" component={AccountScreen} options={{ tabBarLabel: "More" }} />
     </Tabs.Navigator>
   );
 };

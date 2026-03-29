@@ -18,7 +18,7 @@ const initialDashboard: DashboardData = {
 };
 
 export const HomeScreen = () => {
-  const { user, family, signOut } = useAuth();
+  const { user, family } = useAuth();
   const { t, formatDate, formatCurrency } = useLocale();
   const navigation = useNavigation<any>();
   const [dashboard, setDashboard] = useState(initialDashboard);
@@ -109,9 +109,6 @@ export const HomeScreen = () => {
               {formatDate(new Date())} · {family?.name ?? "GoFamly"}
             </Text>
           </View>
-          <Pressable onPress={signOut} className="rounded-full bg-white/10 px-3 py-1.5">
-            <Text className="text-[11px] font-bold text-white">{t("home.signOut")}</Text>
-          </Pressable>
         </View>
 
         <View className="mt-3 rounded-[20px] bg-white/10 px-3 py-3">

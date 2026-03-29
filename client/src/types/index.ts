@@ -4,7 +4,6 @@ export type User = {
   email: string;
   role: "admin" | "member";
   avatarColor: string;
-  shareBudget: boolean;
   familyId: string | null;
 };
 
@@ -20,7 +19,6 @@ export type FamilyMember = {
   email: string;
   role: "admin" | "member";
   avatarColor: string;
-  shareBudget: boolean;
 };
 
 export type GroceryItem = {
